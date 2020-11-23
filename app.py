@@ -152,7 +152,7 @@ app.layout = html.Div(
                     [
                         html.Button("Refresh", id="refresh-button"), 
                         html.A(
-                            html.Button("Home", id="home-button"),
+                            html.Button("Developer", id="home-button"),
                             href="https://gabrielfuentes.org",
                         )                  
                     ],
