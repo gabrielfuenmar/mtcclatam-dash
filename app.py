@@ -48,8 +48,7 @@ app = dash.Dash(
 )
 
 app.title = 'Panama Maritime Stats'
-
-server = app.server
+server=app.server
 
 # Create global chart template
 
