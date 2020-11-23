@@ -640,7 +640,7 @@ def update_gatun(date):
 
 def update_emissions_map(date,trigger_val):
     
-    if date[0]==0:
+    if date[0]==1:
         fr="01-01-2018"
     
     elif date[0]%12==0:
