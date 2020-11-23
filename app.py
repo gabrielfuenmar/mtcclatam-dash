@@ -261,11 +261,11 @@ app.layout = html.Div(
                                 [dcc.Graph(animate=True,config=config,id="map_in"),
                                                          dcc.RangeSlider(
                                                          id="emissions_slider",
-                                                         min=0,
+                                                         min=1,
                                                          max=12,
-                                                         value=[0, 12],
+                                                         value=[1, 12],
                                                          marks={
-                                                            0:"Jan 2018",
+                                                            1:"Jan 2018",
                                                             3:"Mar 2018",
                                                             6:"Jun 2018",
                                                             9:"Sep 2018",
