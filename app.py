@@ -385,7 +385,7 @@ def upper_text_p1(fr="01-01-2019",to="18-11-2020",ports_sel=["All"],
         
         draught_fig.update_layout(layout,legend=dict(x=1),title_text="<b>Draught Ratio per vessel type</b>",
                                   xaxis=dict(title_text="Date"),yaxis=dict(title_text="Ratio"),)
-        draught_fig.add_annotation(annotation_layout,text="*AIS draft/min(maxTFWD, max Allowable Draught)")
+        draught_fig.add_annotation(annotation_layout,text="*AIS draft/min(maxTFWD, max Allowable draft)")
         ##Service and waiting time
         labels_w=[]
         remove_w=[]
