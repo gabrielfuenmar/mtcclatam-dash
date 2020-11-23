@@ -1,0 +1,4 @@
+pandas==1.1.4
+dash==1.17.0
+gunicorn==19.9.0
+geopandas==0.8.1
