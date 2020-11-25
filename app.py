@@ -655,7 +655,7 @@ def clearMap(n_clicks):
         pdd=["All"]
         tdd=["All"]
         ysld=[0,20]
-        ssld=[40,170000]
+        ssld=[400,170000]
         return pdd,tdd,ysld,ssld
 
 
