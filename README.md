@@ -30,7 +30,11 @@ Code development:
         1.Def functions built for every container and linked via a bigger div.html
         2.Particulars of every container retrieved from style.css
         3.Callbacks assigned to every relevant container from every input and map
-  
+ 
+
+https://user-images.githubusercontent.com/45942967/117957191-18b57980-b31a-11eb-8e65-a7707f625c77.mp4
+
+
 Credits: Gabriel Fuentes Lezcano
 
 Licence: MIT License
