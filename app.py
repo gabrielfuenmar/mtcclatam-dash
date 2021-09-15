@@ -119,17 +119,18 @@ app.layout = html.Div(
                 html.Div(
                     [
                         html.A(html.Img(
-                            src=app.get_asset_url("MTCC-logo.png"),
+                            src=app.get_asset_url("mtcc_logo_v3.png"),
                             id="plotly-image",
                             style={
-                                "height": "60px",
+                                "height": "160px",
                                 "width": "auto",
-                                "margin-bottom": "25px",
+                                "margin-bottom": "0px",
+                                "text-align": "center"
                             },
                         ),
                             href="https://mtcclatinamerica.com/")
                     ],
-                    className="one-third column",
+                    className="one-half column",
                 ),
                 html.Div(
                     [
@@ -158,11 +159,13 @@ app.layout = html.Div(
                     ],
                     className="one-third column",
                     id="button",
+                    style={
+                        "text-align": "center"},
                 ),
             ],
             id="header",
             className="row flex-display",
-            style={"margin-bottom": "25px"},
+            style={"margin-bottom": "15px"},
         ),
         html.Div(
             [
