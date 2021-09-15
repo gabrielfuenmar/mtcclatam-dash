@@ -130,7 +130,7 @@ app.layout = html.Div(
                         ),
                             href="https://mtcclatinamerica.com/")
                     ],
-                    className="one-half column",
+                    className="one-third column",
                 ),
                 html.Div(
                     [
