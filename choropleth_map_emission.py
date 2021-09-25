@@ -9,9 +9,7 @@ import pandas as pd
 import h3
 import json
 from geojson.feature import *
-import plotly as py
 import plotly.graph_objs as go
-import branca.colormap as cm
 import geopandas as gpd
 from shapely import wkt
 
