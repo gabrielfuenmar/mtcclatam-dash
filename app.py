@@ -506,7 +506,7 @@ def emissions_map(ghg,res,fr="01-01-2018",to="30-08-2020",type_vessel=[],size=[]
     if df_aggreg.shape[0]>0:
         heatmap=choropleth_map(ghg,df_aggreg,layout_map)
     else:
-        heatmap=go.Figure(data=go.Scatter(x=[0],y=[0]),layout=layout_map)
+        heatmap=go.Figure(data=go.Scattermapbox(lat=[0],lon=[0]),layout=layout_map)
 
     return heatmap
 
