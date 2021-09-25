@@ -6,6 +6,7 @@ gabriel.fuentes@snf.no'''
 # Import required libraries
 import pathlib
 import dash
+import numpy as np
 from dash.dependencies import Input, Output, State, ClientsideFunction
 import dash_core_components as dcc
 import dash_html_components as html
@@ -16,7 +17,9 @@ import plotly.express as px
 from dateutil.relativedelta import *
 from datetime import datetime
 
-from controls import TYPE_COLORS,PORTS_COLORS
+from controls import TYPE_COLORS,PORTS_COLORS,FLEET
+from choropleth_map_emission import choropleth_map, sum_by_hexagon
+
 ##DataFrames
 from data_filtering import processed_data
 import pandas as pd
@@ -25,18 +28,23 @@ import os
 import requests
 
 ##Databases
+##Databases
 panama_ports=gpd.read_file("data/Panama_ports.geojson")
 
-canal,ports=processed_data()
+canal,ports=processed_data(FLEET)
 gatun=pd.read_csv("data/draught_restr_data.csv")
-emissions=pd.read_csv("data/emissions_c02_ship_2018.csv")
+
+em=pd.read_csv("data/emissions.csv")
+em["dt_pos_utc"]=pd.to_datetime(em["dt_pos_utc"])
+
+pol=gpd.read_file("data/Panama_Canal.geojson")[["Name","geometry"]]
+pol=pol[pol.geometry.apply(lambda x: x.geom_type=="Polygon")]
 
 ##Transform to datetime. Preferred to read csv method which is less flexible.
 
 canal["time_at_entrance"]=pd.to_datetime(canal["time_at_entrance"])
 ports["initial_service"]=pd.to_datetime(ports["initial_service"])
 gatun["Date"]=pd.to_datetime(gatun["Date"])
-emissions["date"]=pd.to_datetime(emissions["date"])
 
 ##Ports color
 panama_ports=panama_ports.assign(color="#F9A054")
@@ -130,7 +138,7 @@ app.layout = html.Div(
                         ),
                             href="https://mtcclatinamerica.com/")
                     ],
-                    className="one-third column",
+                    className="one-half column",
                 ),
                 html.Div(
                     [
@@ -195,8 +203,7 @@ app.layout = html.Div(
                         dcc.Dropdown(
                             id='types-dropdown',
                             options=[{'label': row,'value': row} \
-                                     for row in sorted(canal[~canal["Fleet Type"].isin(["Gas Tanker","Tug","Patrol Vessel","Reefers"])]\
-                                         .dropna(subset=["Fleet Type"])["Fleet Type"].unique())],
+                                     for row in sorted(FLEET)],
                                     placeholder="All",multi=True,
                                     className="dcc_control"),
                         html.P("Port:", className="control_label"),
@@ -264,24 +271,23 @@ app.layout = html.Div(
                         ),
                         html.Div([
                             html.Div(
-                                [dcc.Graph(animate=True,config=config,id="map_in"),
-                                                         dcc.RangeSlider(
-                                                         id="emissions_slider",
-                                                         min=0,
-                                                         max=11,
-                                                         value=[0, 11],
+                                    [dcc.Graph(animate=True,config=config,id="map_in"),
+                                             html.P(["Grid size"],id="grid_size",className="control_label"),
+                                                         dcc.Slider(
+                                                         id="zoom_slider",
+                                                         min=4,
+                                                         max=9,
+                                                         value=9,
                                                          marks={
-                                                            0:"Jan 2018",
-                                                            2:"Mar 2018",
-                                                            5:"Jun 2018",
-                                                            8:"Sep 2018",
-                                                            11:"Dec 2018"},
-                                                         allowCross=False,
-                                                         className="dcc_control",),
-                                                         dcc.Checklist(
-                                                             id='selector',options=[{'label': "CO2 emissions", 'value': "CO2"}],
-                                                             value=["CO2"])
-                                 ],
+                                                            4:{'label': '1'},5:{'label': '2'},6:{'label': '3'},
+                                                            7:{'label': '4'},8:{'label': '5'},9:{'label': '6'}},
+                                                         className="dcc_control",
+                                                         included=False),
+                                                             dcc.RadioItems(
+                                                             id='selector',options=[{'label': "CO2 emissions", 'value': "co2"},
+                                                                                    {'label': "CH4 emissions", 'value': "ch4"}],
+                                                             value="co2",labelStyle={'display': 'inline-block'}),
+                                           ],
                                 id="emissionsMapContainer",
                                 className="pretty_container eight columns",
                                 )
@@ -338,10 +344,10 @@ def upper_text_p1(fr="01-01-2019",to="18-11-2020",ports_sel=["All"],
     ports_in=ports[ports.initial_service.between(date_from,date_to)].\
         copy()
     canal_in=canal_in.assign(day=canal_in.time_at_entrance.dt.date)
-    canal_in=canal_in[["day","waiting_time","service_time","port_name","draught_ratio","Fleet Type","GT"]]
+    canal_in=canal_in[["day","waiting_time","service_time","port_name","draught_ratio","StandardVesselType","GT"]]
     canal_in["day"]=pd.to_datetime(canal_in.day)
     ports_in=ports_in.assign(day=ports_in.initial_service.dt.date)
-    ports_in=ports_in[["day","waiting_time","service_time","port_name","draught_ratio","Fleet Type","GT"]]
+    ports_in=ports_in[["day","waiting_time","service_time","port_name","draught_ratio","StandardVesselType","GT"]]
     ports_in["day"]=pd.to_datetime(ports_in.day)
     
     df_in=pd.concat([ports_in,canal_in],axis=0)
@@ -353,7 +359,7 @@ def upper_text_p1(fr="01-01-2019",to="18-11-2020",ports_sel=["All"],
         df_in=df_in[df_in.GT.between(size[0],size[1])]
         
     if "All" not in type_vessel:
-        df_in=df_in[df_in["Fleet Type"].isin(type_vessel)]
+        df_in=df_in[df_in["StandardVesselType"].isin(type_vessel)]
         
     if text_bar is True: ##Row at top with summary values
         waiting_mean=df_in.waiting_time.mean()
@@ -368,16 +374,16 @@ def upper_text_p1(fr="01-01-2019",to="18-11-2020",ports_sel=["All"],
         df_in=df_in[df_in.day>pd.to_datetime("01-01-2019")]
         df_in=df_in.reset_index(drop=True)
         series_grouped=[]
-        for name,row in df_in[~df_in["Fleet Type"].isin(["Passenger Ship","Reefers","Gas Tanker","Patrol Vessel","Tug"])].\
-        groupby([df_in.day.dt.isocalendar().week,df_in.day.dt.year,"Fleet Type"]):
+        for name,row in df_in.\
+        groupby([df_in.day.dt.isocalendar().week,df_in.day.dt.year,"StandardVesselType"]):
             series_grouped.append([pd.to_datetime(str(name[1])+"-"+str(name[0])+"-1",format='%Y-%W-%w'),name[2],row.draught_ratio.mean()])
         
-        series_grouped=pd.DataFrame(series_grouped,columns=["day","Fleet Type","draught_ratio"]).sort_values(by=["day"])
+        series_grouped=pd.DataFrame(series_grouped,columns=["day","StandardVesselType","draught_ratio"]).sort_values(by=["day"])
         
         draught_fig = go.Figure()
         
-        for val in series_grouped["Fleet Type"].unique():
-            series_in=series_grouped[series_grouped["Fleet Type"]==val]
+        for val in series_grouped["StandardVesselType"].unique():
+            series_in=series_grouped[series_grouped["StandardVesselType"]==val]
             draught_fig.add_trace(go.Scatter(
                 name=val,
                 mode="markers+lines",
@@ -498,38 +504,21 @@ def lake_draught(fr="01-01-2015",to="18-11-2020",*args):
     lake_fig.add_annotation(annotation_layout,text="*Values sourced by the Panama Canal Authority Maritime Services Platform")
     return lake_fig
     
+def emissions_map(ghg,res,fr="01-01-2018",to="30-08-2020",type_vessel=[],size=[]):
     
-def emissions_map(fr="01-01-2018",to="31-12-2018",trigger=False):
-    emissions_in=emissions.copy()
-
-    date_from=pd.to_datetime(fr)
+    emissions_in=em.copy()
+    date_fr=pd.to_datetime(fr)
     date_to=pd.to_datetime(to)
     
-    emissions_in=emissions_in[emissions_in.date.between(date_from,date_to)]
-    emissions_in=emissions_in.groupby(["lon","lat"])["level"].sum().reset_index()
+    df_aggreg=sum_by_hexagon(emissions_in,res,pol,date_fr,date_to,vessel_type=type_vessel,gt=size)
     
-    heatmap=px.density_mapbox(emissions_in,lat="lat",lon="lon",z=emissions_in.level,
-                       radius=35,opacity=0.7,)
-    
-    heatmap.update_layout(layout_map)
-    heatmap.layout.coloraxis.colorbar.title = 'Level kg m<sup>-2</sup>s<sup>-1</sup>'
-    ###Map
+    if df_aggreg.shape[0]>0:
+        heatmap=choropleth_map(ghg,df_aggreg,layout_map)
+    else:
+        heatmap=go.Figure(data=go.Scatter(x=[0],y=[0]),layout=layout_map)
 
-    map_fig=px.choropleth_mapbox(panama_ports,
-                            geojson=panama_ports.geometry,
-                            locations=panama_ports.index,
-                            color_discrete_map=pd.Series(panama_ports.color.values,index=panama_ports.name).to_dict(),
-                            color=panama_ports.name,
-                            opacity=0.3)
-    map_fig.update_layout(layout_map)
-    heatmap.add_annotation(annotation_layout,x=0.40,y=-0.03,font_size=14,
-                           text="*Shipping emissions from Copernicus Atmosphere Monitoring Service")
-    if trigger is True:
-        return heatmap
-   
-    else:     
-        return map_fig
-    
+    return heatmap
+
 ##Upper Row,
 @app.callback(
     [
@@ -628,22 +617,25 @@ def update_gatun(date):
 
 @app.callback(
     Output("map_in", "figure"),
-    [ Input('emissions_slider', 'value'),
-      Input("selector","value")
+    [Input("selector","value"),
+     Input("zoom_slider","value"),
+     Input('year_slider', 'value'),
+     Input("types-dropdown","value"),
+     Input('size_slider', 'value'),
       ],
 )
 
-def update_emissions_map(date,trigger_val):
+def update_emissions_map(ghg_t,resol,date,types_val,size_val):
     
-    date_fr=pd.to_datetime("01-01-2018 00:00")+relativedelta(months=+date[0])
-    date_to=pd.to_datetime("01-01-2018 00:00")+relativedelta(months=+date[1])
+    date_fr=pd.to_datetime("01-01-2019 00:00")+relativedelta(months=+date[0])
+    date_to=pd.to_datetime("01-01-2019 00:00")+relativedelta(months=+date[1])
     date_to=date_to+ relativedelta(day=31)
     
-    if not trigger_val:
-        emission_fig=emissions_map(fr=date_fr,to=date_to)
-    else:
-        emission_fig=emissions_map(fr=date_fr,to=date_to,trigger=True)
+    if "All" in types_val:
+        types_val=[]
     
+    emission_fig=emissions_map(ghg_t,resol,fr=date_fr,to=date_to,type_vessel=types_val,size=size_val)
+        
     return emission_fig
 
 ##Refresh button
@@ -651,7 +643,7 @@ def update_emissions_map(date,trigger_val):
                Output("types-dropdown","value"),
                Output('year_slider', 'value'),
                Output('size_slider', 'value')],
-              [Input('refresh-button', 'n_clicks')])    
+              [Input('refresh-button', 'n_clicks')])     
 
 def clearMap(n_clicks):
     if n_clicks !=0:
@@ -660,7 +652,6 @@ def clearMap(n_clicks):
         ysld=[0,20]
         ssld=[400,170000]
         return pdd,tdd,ysld,ssld
-
 
 # Main
 if __name__ == "__main__":
