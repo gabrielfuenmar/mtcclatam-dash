@@ -99,15 +99,6 @@ layout= dict(
 
 ##Modebar on graphs
 config={"displaylogo":False, 'modeBarButtonsToRemove': ['autoScale2d']}
-###Map
-
-map_fig=px.choropleth_mapbox(panama_ports,
-                            geojson=panama_ports.geometry,
-                            locations=panama_ports.index,
-                            color_discrete_map=pd.Series(panama_ports.color.values,index=panama_ports.name).to_dict(),
-                            color=panama_ports.name,
-                            opacity=0.6,)
-map_fig.update_layout(layout_map)
 
 ##Annotation on graphs
 annotation_layout=dict(
@@ -271,7 +262,7 @@ app.layout = html.Div(
                         ),
                         html.Div([
                             html.Div(
-                                    [dcc.Graph(animate=True,config=config,id="map_in"),
+                                    [dcc.Graph(animate=False,config=config,id="map_in"),
                                              html.P(["Grid size"],id="grid_size",className="control_label"),
                                                          dcc.Slider(
                                                          id="zoom_slider",
