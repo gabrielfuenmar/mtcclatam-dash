@@ -125,7 +125,8 @@ def choropleth_map(ghg, df_aggreg,layout_in,fill_opacity = 0.5):
                                     colorscale="balance",
                                     marker_opacity=fill_opacity,
                                     marker_line_width=1,
-                                    colorbar = dict(thickness=20, ticklen=3,title="grams"))
+                                    colorbar = dict(thickness=20, ticklen=3,title="grams"),
+                                    hovertemplate = '%{z:,.2f}<extra></extra>'))
     
     initial_map=go.Figure(data=initial_map,layout=layout_in)
     
