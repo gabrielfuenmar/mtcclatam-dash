@@ -78,7 +78,7 @@ layout_map = dict(
         accesstoken=MAPBOX_TOKEN,
         style='mapbox://styles/gabrielfuenmar/ckhs87tuj2rd41amvifhb26ad',
         center=dict(lon=-79.55, lat=8.93),
-        zoom=8,
+        zoom=9,
     ),
     showlegend=False,
 )
