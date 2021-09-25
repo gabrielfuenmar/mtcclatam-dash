@@ -8,7 +8,7 @@ Created on Fri Nov 13 10:24:39 2020
 import pandas as pd
 import numpy as np
 
-def processed_data():
+def processed_data(FLEET):
     ##Ports info adjust and filtering.
     df=pd.read_csv("data/ports_solutions_sp.csv")
     
@@ -70,11 +70,12 @@ def processed_data():
     ###Panama Info. Next time, rescue types from AIS reading
     
     canal=pd.read_csv("data/panama_transits_sp.csv")
-    canal=canal[canal["Fleet Type"].notnull()]
+    canal=canal[canal["StandardVesselType"].isin(FLEET)]
     
     
     ##Errors in values
     return canal,df
+
 
 
 
