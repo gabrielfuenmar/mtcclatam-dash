@@ -1,17 +1,20 @@
 #Controls for APP
 
 TYPE_COLORS = {
-    "Others":"#FFEDA0",
-    "Ro-Ro":"#FA9FB5",
-    "Other Tanker":"#A1D99B",
-    "Bulk Carrier":"#67BD65",
-    "Containerships":"#BFD3E6",
-    "LNG":"#B3DE69",
-    "Product Tankers":"#FDBF6F",
-    "Crude Tankers":"#FC9272",
-    "General Cargo":"#D0D1E6",
-    "LPG":"#ABD9E9",
-    "Passenger Ship":"#3690C0"
+    "Yacht":"#FFEDA0",
+    "Cruise":"#FA9FB5",
+    "Ferry-pax only":"#A1D99B",
+    "General cargo":"#67BD65",
+    "Oil tanker":"#BFD3E6",
+    "Ferry-RoPax":"#B3DE69",
+    "Bulk carrier":"#FDBF6F",
+    "Refrigerated bulk":"#FC9272",
+    "Ro-Ro":"#D0D1E6",
+    "Chemical tanker":"#ABD9E9",
+    "Vehicle":"#3690C0",
+    "Container":"#333333",
+    "Liquified gas tanker":"#D96C06",
+    "Other liquids tankers":"#544B3D"
 }
 PORTS_COLORS={
     "Panama Canal South":"#6671fD",
@@ -22,3 +25,6 @@ PORTS_COLORS={
     "CCT":"#F9A054",
     "Atlantic - PPC Cristobal":"#207F23",
     }
+
+FLEET=['Yacht',  'Cruise', 'Ferry-pax only',  'General cargo', 'Oil tanker','Ferry-RoPax', 'Bulk carrier', 
+      'Refrigerated bulk', 'Ro-Ro','Chemical tanker', 'Vehicle','Container', 'Liquified gas tanker', 'Other liquids tankers']
