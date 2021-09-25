@@ -82,6 +82,7 @@ layout_map = dict(
     ),
     showlegend=False,
 )
+
 layout= dict(
     legend=dict(bgcolor='rgba(0,0,0,0)',font=dict(size=14,family="HelveticaNeue")),
     font_family="HelveticaNeue",
@@ -99,6 +100,7 @@ layout= dict(
 
 ##Modebar on graphs
 config={"displaylogo":False, 'modeBarButtonsToRemove': ['autoScale2d']}
+
 
 ##Annotation on graphs
 annotation_layout=dict(
@@ -495,7 +497,7 @@ def lake_draught(fr="01-01-2015",to="18-11-2020",*args):
     lake_fig.add_annotation(annotation_layout,text="*Values sourced by the Panama Canal Authority Maritime Services Platform")
     return lake_fig
     
-def emissions_map(ghg,res,fr="01-01-2018",to="30-08-2020",type_vessel=[],size=[]):
+def emissions_map(ghg,res,fr="01-01-2018",to="30-08-2020",lat=None,lon=None,zoom=None,type_vessel=[],size=[]):
     
     emissions_in=em.copy()
     date_fr=pd.to_datetime(fr)
@@ -503,6 +505,13 @@ def emissions_map(ghg,res,fr="01-01-2018",to="30-08-2020",type_vessel=[],size=[]
     
     df_aggreg=sum_by_hexagon(emissions_in,res,pol,date_fr,date_to,vessel_type=type_vessel,gt=size)
     
+    
+    ##Update layout
+    if lat is not None:
+        layout_map["mapbox"]["center"]["lon"]=lon
+        layout_map["mapbox"]["center"]["lat"]=lat
+        layout_map["mapbox"]["zoom"]=zoom
+        
     if df_aggreg.shape[0]>0:
         heatmap=choropleth_map(ghg,df_aggreg,layout_map)
     else:
@@ -614,20 +623,35 @@ def update_gatun(date):
      Input("types-dropdown","value"),
      Input('size_slider', 'value'),
       ],
+    [State("map_in","relayoutData")]
 )
 
-def update_emissions_map(ghg_t,resol,date,types_val,size_val):
+def update_emissions_map(ghg_t,resol,date,types_val,size_val,relay):
     
     date_fr=pd.to_datetime("01-01-2019 00:00")+relativedelta(months=+date[0])
     date_to=pd.to_datetime("01-01-2019 00:00")+relativedelta(months=+date[1])
     date_to=date_to+ relativedelta(day=31)
     
+    if relay is not None:   
+        if "mapbox.center" in relay.keys():
+            lat=relay["mapbox.center"]["lat"]
+            lon=relay["mapbox.center"]["lon"]
+            zoom=relay["mapbox.zoom"]
+        else:
+            lat=8.93
+            lon=-79.55
+            zoom=9
+    else:
+        lat=8.93
+        lon=-79.55
+        zoom=9
+    
     if "All" in types_val:
         types_val=[]
     
-    emission_fig=emissions_map(ghg_t,resol,fr=date_fr,to=date_to,type_vessel=types_val,size=size_val)
+    emission_fig=emissions_map(ghg_t,resol,fr=date_fr,to=date_to,lat=lat,lon=lon,zoom=zoom,type_vessel=types_val,size=size_val)
         
-    return emission_fig
+    return emission_fig 
 
 ##Refresh button
 @app.callback([Output("ports-dropdown", "value"),
@@ -643,7 +667,6 @@ def clearMap(n_clicks):
         ysld=[0,20]
         ssld=[400,170000]
         return pdd,tdd,ysld,ssld
-
-# Main
+    
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(debug=True,use_reloader=False)
