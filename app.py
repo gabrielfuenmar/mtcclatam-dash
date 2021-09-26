@@ -34,7 +34,7 @@ panama_ports=gpd.read_file("data/Panama_ports.geojson")
 canal,ports=processed_data(FLEET)
 gatun=pd.read_csv("data/draught_restr_data.csv")
 
-em=pd.read_csv("data/emissions.csv")
+em=pd.read_csv("data/emissions_type_monthly.csv")
 em["dt_pos_utc"]=pd.to_datetime(em["dt_pos_utc"])
 
 pol=gpd.read_file("data/Panama_Canal.geojson")[["Name","geometry"]]
@@ -264,16 +264,20 @@ app.layout = html.Div(
                         ),
                         html.Div([
                             html.Div(
-                                    [dcc.Graph(animate=False,config=config,id="map_in"),
+                                    [
+                                        html.Div([html.H5("Emissions Review"),
+                                                  html.H6(id="month_map",style={"color":"white"})],
+                                                            style={"display": "flex", "flex-direction": "row","justify-content":"space-between"}),
+                                        dcc.Graph(animate=False,config=config,id="map_in"),
                                              html.P(["Grid size"],id="grid_size",className="control_label"),
                                                          dcc.Slider(
                                                          id="zoom_slider",
                                                          min=4,
-                                                         max=9,
-                                                         value=9,
+                                                         max=8,
+                                                         value=8,
                                                          marks={
                                                             4:{'label': '1'},5:{'label': '2'},6:{'label': '3'},
-                                                            7:{'label': '4'},8:{'label': '5'},9:{'label': '6'}},
+                                                            7:{'label': '4'},8:{'label': '5'}},
                                                          className="dcc_control",
                                                          included=False),
                                                              dcc.RadioItems(
@@ -621,12 +625,11 @@ def update_gatun(date):
      Input("zoom_slider","value"),
      Input('year_slider', 'value'),
      Input("types-dropdown","value"),
-     Input('size_slider', 'value'),
       ],
     [State("map_in","relayoutData")]
 )
 
-def update_emissions_map(ghg_t,resol,date,types_val,size_val,relay):
+def update_emissions_map(ghg_t,resol,date,types_val,relay):
     
     date_fr=pd.to_datetime("01-01-2019 00:00")+relativedelta(months=+date[0])
     date_to=pd.to_datetime("01-01-2019 00:00")+relativedelta(months=+date[1])
@@ -649,10 +652,30 @@ def update_emissions_map(ghg_t,resol,date,types_val,size_val,relay):
     if "All" in types_val:
         types_val=[]
     
-    emission_fig=emissions_map(ghg_t,resol,fr=date_fr,to=date_to,lat=lat,lon=lon,zoom=zoom,type_vessel=types_val,size=size_val)
+    ####Size deactived for the time being.
+    emission_fig=emissions_map(ghg_t,resol,fr=date_fr,to=date_to,lat=lat,lon=lon,zoom=zoom,type_vessel=types_val,size=[])
         
     return emission_fig 
 
+###Month and type update on map
+@app.callback(
+     Output("month_map", "children"),
+    [ Input('year_slider', 'value'),
+      ],
+)
+
+def month_map(date):
+    fr=(pd.to_datetime("12-01-2018 00:00")+relativedelta(months=+date[0]))
+    to=(pd.to_datetime("12-01-2018 00:00")+relativedelta(months=+date[1]))
+    
+    m_fr=datetime.strptime(str(fr.month), "%m").strftime("%b")
+    m_to=datetime.strptime(str(to.month), "%m").strftime("%b")
+
+    
+    m_e="{} {} to {} {}".format(m_fr,fr.year,m_to,to.year)
+    
+    return m_e
+    
 ##Refresh button
 @app.callback([Output("ports-dropdown", "value"),
                Output("types-dropdown","value"),
@@ -670,3 +693,4 @@ def clearMap(n_clicks):
     
 if __name__ == "__main__":
     app.run_server(debug=True,use_reloader=False)
+
