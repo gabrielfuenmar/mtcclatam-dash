@@ -12,7 +12,7 @@ TYPE_COLORS = {
     "Ro-Ro":"#D0D1E6",
     "Chemical tanker":"#ABD9E9",
     "Vehicle":"#3690C0",
-    "Container":"#333333",
+    "Container":"#FFFFFF",
     "Liquified gas tanker":"#D96C06",
     "Other liquids tankers":"#544B3D"
 }
