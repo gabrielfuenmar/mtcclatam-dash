@@ -69,11 +69,10 @@ layout_map = dict(
     autosize=True,
     paper_bgcolor='#30333D',
     plot_bgcolor='#30333D',
-    margin=dict(l=10, r=10, b=10, t=40),
+    margin=dict(l=10, r=10, b=10, t=10),
     hovermode="closest",
     font=dict(family="HelveticaNeue",size=17,color="#B2B2B2"),
     legend=dict(font=dict(size=10), orientation="h"),
-    title="<b>Emissions Review</b>",
     mapbox=dict(
         accesstoken=MAPBOX_TOKEN,
         style='mapbox://styles/gabrielfuenmar/ckhs87tuj2rd41amvifhb26ad',
