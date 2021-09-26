@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Sep 24 14:37:08 2021
-
-@author: snf52211
-"""
-
 import pandas as pd
 import h3
 import json
@@ -35,26 +28,24 @@ def sum_by_hexagon(df,resolution,pol,fr,to,vessel_type=[],gt=[]):
     Use h3.geo_to_h3 to index each data point into the spatial index of the specified resolution.
     Use h3.h3_to_geo_boundary to obtain the geometries of these hexagons
     
-    Ex counts_by_hexagon(data, 9)
+    Ex counts_by_hexagon(data, 8)
     """
     
     if vessel_type:
         df_aggreg=df[((df.dt_pos_utc.between(fr,to))&(df.StandardVesselType.isin(vessel_type)))]
     else:
         df_aggreg=df[df.dt_pos_utc.between(fr,to)]
-    if df_aggreg.shape[0]>0:
-        df_aggreg=df_aggreg[df_aggreg.res_9.isin(list_of_valid_hex(pol,9))].reset_index(drop=True)
-        
+    if df_aggreg.shape[0]>0:        
         if gt:
             df_aggreg=df_aggreg[df_aggreg.GrossTonnage.between(gt[0],gt[1])]
     
-        if resolution==9:
-            df_aggreg = df_aggreg.groupby(by = "res_9").agg({"co2_g":sum,"ch4_g":sum}).reset_index()
+        if resolution==8:
+            df_aggreg = df_aggreg.groupby(by = "res_8").agg({"co2_t":sum,"ch4_t":sum}).reset_index()
         else:
-            df_aggreg = df_aggreg.assign(new_res=df_aggreg.res_9.apply(lambda x: h3.h3_to_parent(x,resolution)))
-            df_aggreg = df_aggreg.groupby(by = "new_res").agg({"co2_g":sum,"ch4_g":sum}).reset_index()
+            df_aggreg = df_aggreg.assign(new_res=df_aggreg.res_8.apply(lambda x: h3.h3_to_parent(x,resolution)))
+            df_aggreg = df_aggreg.groupby(by = "new_res").agg({"co2_t":sum,"ch4_t":sum}).reset_index()
             
-        df_aggreg.columns = ["hex_id", "co2_g","ch4_g"]
+        df_aggreg.columns = ["hex_id", "co2_t","ch4_t"]
             
         df_aggreg["geometry"] =  df_aggreg.hex_id.apply(lambda x: 
                                                                 {    "type" : "Polygon",
@@ -100,9 +91,9 @@ def choropleth_map(ghg, df_aggreg,layout_in,fill_opacity = 0.5):
     """    
     
     if ghg=="co2":
-        ghg="co2_g"
+        ghg="co2_t"
     elif ghg=="ch4":
-        ghg="ch4_g"
+        ghg="ch4_t"
     else:
         ValueError ("Enter ch4 or co2")
     
@@ -125,7 +116,7 @@ def choropleth_map(ghg, df_aggreg,layout_in,fill_opacity = 0.5):
                                     colorscale="balance",
                                     marker_opacity=fill_opacity,
                                     marker_line_width=1,
-                                    colorbar = dict(thickness=20, ticklen=3,title="grams"),
+                                    colorbar = dict(thickness=20, ticklen=3,title="tonnes"),
                                     hovertemplate = '%{z:,.2f}<extra></extra>')
     
     initial_map=go.Figure(data=initial_map,layout=layout_in)
