@@ -275,7 +275,7 @@ app.layout = html.Div(
                                                          max=8,
                                                          value=8,
                                                          marks={
-                                                            4:{'label': '1'},5:{'label': '2'},6:{'label': '3'},
+                                                            0:{'label': '1'},1:{'label': '2'},6:{'label': '3'},
                                                             7:{'label': '4'},8:{'label': '5'}},
                                                          className="dcc_control",
                                                          included=False),
