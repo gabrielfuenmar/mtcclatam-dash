@@ -271,13 +271,11 @@ app.layout = html.Div(
                                              html.P(["Grid size"],id="grid_size",className="control_label"),
                                                          dcc.Slider(
                                                          id="zoom_slider",
-                                                         min=0,
+                                                         min=4,
                                                          max=8,
                                                          value=8,
-                                                         marks={
-                                                            0:{'label': '1'},1:{'label': '2'},2:{'label': '3'},3:{'label': '4'},
-                                                            4:{'label': '5'},5:{'label': '6'},6:{'label': '7'},
-                                                            7:{'label': '8'},8:{'label': '9'}},
+                                                         marks={4:{'label': '1'},5:{'label': '2'},6:{'label': '3'},
+                                                            7:{'label': '4'},8:{'label': '5'}},
                                                          className="dcc_control",
                                                          included=False),
                                                              dcc.RadioItems(
