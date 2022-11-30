@@ -31,6 +31,13 @@ body {
   box-shadow: 2px 2px 2px #21252C;
 }
 
+.study-browser-banner {
+  background: rgb(2,21,70);
+  color: white;
+  padding: 12px;
+  padding-left: 48px;
+}
+
 .bare_container {
   margin: 0 0 0 0;
   padding: 0 0 0 0;
